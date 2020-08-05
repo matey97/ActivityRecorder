@@ -14,16 +14,20 @@ import java.util.List;
 import es.uji.geotec.activityrecorder.model.AccelerometerSensorRecord;
 import es.uji.geotec.activityrecorder.model.ActivityEnum;
 
-public class LocalPersister extends SensorRecordPersister{
+public class LocalFilePersister{
 
     private final String BASE_DIR = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getAbsolutePath() + File.separator + "ActivityRecorder";
+    private final String[] HEADER = {"timestamp", "x", "y", "z"};
+    private final String PATTERN = "dd-MM-yyyy_HH:mm:ss";
 
-    public LocalPersister(ActivityEnum activityEnum) {
-        super(activityEnum);
+    private ActivityEnum activity;
+    private String fileName;
+
+    public LocalFilePersister(ActivityEnum activityEnum) {
+        this.activity = activityEnum;
     }
 
-    @Override
-    public void saveSensorRecords(List<AccelerometerSensorRecord> records) {
+    public String saveSensorRecords(List<AccelerometerSensorRecord> records) {
         try(CSVWriter writer = getWriter()){
             for (AccelerometerSensorRecord record : records) {
                 saveSensorRecord(writer, record);
@@ -31,6 +35,8 @@ public class LocalPersister extends SensorRecordPersister{
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+
+        return fileName;
     }
 
     private void saveSensorRecord(CSVWriter writer, AccelerometerSensorRecord r){
@@ -48,7 +54,7 @@ public class LocalPersister extends SensorRecordPersister{
         String activityPath = BASE_DIR + File.separator + activity;
         createDirIfNeeded(activityPath);
 
-        String fileName = getFileName(activityPath);
+        fileName = getFileName(activityPath);
         File recordsFile = new File(fileName);
         boolean recordsFileExists = recordsFile.exists();
 
@@ -67,16 +73,16 @@ public class LocalPersister extends SensorRecordPersister{
         return writer;
     }
 
-    private String getFileName(String activityPath) {
-        String date = new SimpleDateFormat(PATTERN).format(new Date());
-        return activityPath + File.separator + date + ".csv";
-    }
-
     private void createDirIfNeeded(String dirName) {
         File dir = new File(dirName);
         if (!dir.exists()) {
             dir.mkdir();
         }
+    }
+
+    private String getFileName(String activityPath) {
+        String date = new SimpleDateFormat(PATTERN).format(new Date());
+        return activityPath + File.separator + date + ".csv";
     }
 
     private <T> String parseToString(T value) {
