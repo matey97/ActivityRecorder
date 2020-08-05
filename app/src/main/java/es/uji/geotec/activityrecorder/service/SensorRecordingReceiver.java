@@ -29,14 +29,13 @@ public class SensorRecordingReceiver implements SensorEventListener {
         if (event.sensor.getType() != Sensor.TYPE_ACCELEROMETER)
             return;
 
-        long timestamp = event.timestamp;
         float xValue = event.values[0];
         float yValue = event.values[1];
         float zValue = event.values[2];
 
         Log.d(TAG, String.format("onSensorChanged: x -> %f, y -> %f, z -> %f", xValue, yValue, zValue));
 
-        sensorRecords.add(new AccelerometerSensorRecord(timestamp, xValue, yValue, zValue));
+        sensorRecords.add(new AccelerometerSensorRecord(System.currentTimeMillis(), xValue, yValue, zValue));
     }
 
     @Override
