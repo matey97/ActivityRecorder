@@ -15,6 +15,7 @@ import androidx.core.app.NotificationCompat;
 
 import es.uji.geotec.activityrecorder.R;
 import es.uji.geotec.activityrecorder.model.ActivityEnum;
+import es.uji.geotec.activityrecorder.persistence.LocalPersister;
 import es.uji.geotec.activityrecorder.persistence.SensorRecordPersister;
 
 public class SensorRecordingService extends Service {
@@ -99,9 +100,9 @@ public class SensorRecordingService extends Service {
     }
 
     private void saveRecords() {
-        SensorRecordPersister persister = new SensorRecordPersister(activity);
+        SensorRecordPersister localPersister = new LocalPersister(activity);
 
-        persister.saveSensorRecordsBatch(sensorReceiver.getSensorRecords());
+        localPersister.saveSensorRecords(sensorReceiver.getSensorRecords());
 
         Log.d(TAG, "saveRecords: gathered records for " + activity + " saved");
     }
