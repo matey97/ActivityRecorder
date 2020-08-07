@@ -21,9 +21,12 @@ public class FirebaseStoragePersister {
     private ActivityEnum activity;
     private StorageReference storageReference;
 
-    public FirebaseStoragePersister(ActivityEnum activityEnum) {
-        activity = activityEnum;
+    public FirebaseStoragePersister() {
         storageReference = FirebaseStorage.getInstance().getReference(STORAGE_LOCATION);
+    }
+
+    public void setActivity(ActivityEnum activityEnum) {
+        this.activity = activityEnum;
     }
 
     public void uploadRecordsFile(String fileName) {

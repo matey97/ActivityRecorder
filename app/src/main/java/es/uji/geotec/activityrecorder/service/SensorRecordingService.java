@@ -99,8 +99,9 @@ public class SensorRecordingService extends Service {
     }
 
     private void saveRecords() {
-        SensorRecordPersister persister = new SensorRecordPersister(activity);
+        SensorRecordPersister persister = SensorRecordPersister.getInstance();
 
+        persister.setActivity(activity);
         persister.saveSensorRecords(sensorReceiver.getSensorRecords());
 
         Log.d(TAG, "saveRecords: gathered records for " + activity + " saved");

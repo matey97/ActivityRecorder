@@ -7,19 +7,36 @@ import es.uji.geotec.activityrecorder.model.ActivityEnum;
 
 public class SensorRecordPersister {
 
-
-    private ActivityEnum activity;
     private LocalFilePersister filePersister;
     private FirebaseStoragePersister firebaseStoragePersister;
+    private boolean isFirebaseEnabled;
 
-    public SensorRecordPersister(ActivityEnum activity) {
-        this.activity = activity;
-        filePersister = new LocalFilePersister(activity);
-        firebaseStoragePersister = new FirebaseStoragePersister(activity);
+    private static SensorRecordPersister instance;
+
+    private SensorRecordPersister() {
+        filePersister = new LocalFilePersister();
+        firebaseStoragePersister = new FirebaseStoragePersister();
+    }
+
+    public static SensorRecordPersister getInstance() {
+        if (instance == null)
+            instance = new SensorRecordPersister();
+        return instance;
+    }
+
+    public void setActivity(ActivityEnum activity) {
+        filePersister.setActivity(activity);
+        firebaseStoragePersister.setActivity(activity);
+    }
+
+    public void setFirebaseEnabled(boolean enabled){
+        isFirebaseEnabled = enabled;
     }
 
     public void saveSensorRecords(List<AccelerometerSensorRecord> records) {
         String fileToUpload = filePersister.saveSensorRecords(records);
-        firebaseStoragePersister.uploadRecordsFile(fileToUpload);
+
+        if (isFirebaseEnabled)
+            firebaseStoragePersister.uploadRecordsFile(fileToUpload);
     }
 }

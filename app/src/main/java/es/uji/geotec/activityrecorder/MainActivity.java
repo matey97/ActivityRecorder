@@ -10,9 +10,11 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import es.uji.geotec.activityrecorder.model.ActivityEnum;
+import es.uji.geotec.activityrecorder.persistence.SensorRecordPersister;
 import es.uji.geotec.activityrecorder.service.SensorRecordingService;
 
 import static es.uji.geotec.activityrecorder.service.SensorRecordingService.ACTIVITY;
@@ -25,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private Spinner activitySpinner;
     private Button startButton;
     private Button stopButton;
+    private Switch firebaseSwitch;
 
     private ActivityEnum activitySelected;
     private PermissionsManager permissionsManager;
@@ -38,8 +41,10 @@ public class MainActivity extends AppCompatActivity {
         activitySpinner = findViewById(R.id.activity_spinner);
         startButton = findViewById(R.id.start_recording);
         stopButton = findViewById(R.id.stop_recording);
+        firebaseSwitch = findViewById(R.id.firebase_switch);
 
         permissionsManager = new PermissionsManager(this);
+        SensorRecordPersister.getInstance().setFirebaseEnabled(true);
 
         setUpSpinner();
         updateUIElements(false);
@@ -75,6 +80,11 @@ public class MainActivity extends AppCompatActivity {
     public void onStopClicked(View v) {
         stopService(intent);
         updateUIElements(false);
+    }
+
+    public void onSwitchClicked(View v) {
+        boolean firebaseChecked = firebaseSwitch.isChecked();
+        SensorRecordPersister.getInstance().setFirebaseEnabled(firebaseChecked);
     }
 
     private void startRecording() {

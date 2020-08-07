@@ -23,7 +23,7 @@ public class LocalFilePersister{
     private ActivityEnum activity;
     private String fileName;
 
-    public LocalFilePersister(ActivityEnum activityEnum) {
+    public void setActivity(ActivityEnum activityEnum) {
         this.activity = activityEnum;
     }
 
