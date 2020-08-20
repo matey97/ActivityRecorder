@@ -13,7 +13,10 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
+import java.util.List;
+
 import es.uji.geotec.activityrecorder.R;
+import es.uji.geotec.activityrecorder.model.AccelerometerSensorRecord;
 import es.uji.geotec.activityrecorder.model.ActivityEnum;
 import es.uji.geotec.activityrecorder.persistence.SensorRecordPersister;
 
@@ -25,6 +28,9 @@ public class SensorRecordingService extends Service {
 
     private static final String CHANNEL_ID = "ActivityRecorder";
     private static final int NOTIFICATION_ID = 53;
+
+    private static final int SAMPLES_PER_SECOND = 50;
+    private static final int SAMPLES_TO_DISCARD = SAMPLES_PER_SECOND * 5;
 
     private SensorManager sensorManager;
     private SensorRecordingReceiver sensorReceiver;
@@ -102,7 +108,13 @@ public class SensorRecordingService extends Service {
         SensorRecordPersister persister = SensorRecordPersister.getInstance();
 
         persister.setActivity(activity);
-        persister.saveSensorRecords(sensorReceiver.getSensorRecords());
+
+        List<AccelerometerSensorRecord> sensorRecords = sensorReceiver.getSensorRecords();
+
+        // First and last SAMPLES_TO_DISCARD are removed in order to avoid noise
+        // (click button and place phone on pocket, get phone from pocket to stop...)
+        sensorRecords = sensorRecords.subList(SAMPLES_TO_DISCARD, sensorRecords.size() - SAMPLES_TO_DISCARD);
+        persister.saveSensorRecords(sensorRecords);
 
         Log.d(TAG, "saveRecords: gathered records for " + activity + " saved");
     }
