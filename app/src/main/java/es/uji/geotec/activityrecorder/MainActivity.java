@@ -3,9 +3,14 @@ package es.uji.geotec.activityrecorder;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.PowerManager;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -21,6 +26,8 @@ import static es.uji.geotec.activityrecorder.service.SensorRecordingService.ACTI
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String RUNNING_KEY = "RUNNING";
+
     private Intent intent;
 
     private TextView statusText;
@@ -31,6 +38,9 @@ public class MainActivity extends AppCompatActivity {
 
     private ActivityEnum activitySelected;
     private PermissionsManager permissionsManager;
+    private PowerManager powerManager;
+
+    private SharedPreferences preferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,10 +54,15 @@ public class MainActivity extends AppCompatActivity {
         firebaseSwitch = findViewById(R.id.firebase_switch);
 
         permissionsManager = new PermissionsManager(this);
+        powerManager = (PowerManager) getSystemService(POWER_SERVICE);
         SensorRecordPersister.getInstance().setFirebaseEnabled(true);
 
+        requestBatteryOptmizationsIfNeeded();
         setUpSpinner();
-        updateUIElements(false);
+
+        preferences = getPreferences(Context.MODE_PRIVATE);
+        boolean running = preferences.getBoolean(RUNNING_KEY, false);
+        updateUIElements(running);
     }
 
     @Override
@@ -87,6 +102,17 @@ public class MainActivity extends AppCompatActivity {
         SensorRecordPersister.getInstance().setFirebaseEnabled(firebaseChecked);
     }
 
+    private void requestBatteryOptmizationsIfNeeded() {
+        if (powerManager.isIgnoringBatteryOptimizations(getPackageName()))
+            return;
+
+        Intent intent = new Intent(
+                Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                Uri.parse("package:"+getPackageName())
+        );
+        startActivity(intent);
+    }
+
     private void startRecording() {
         intent = new Intent(this, SensorRecordingService.class);
         intent.putExtra(ACTIVITY, (ActivityEnum) activitySpinner.getSelectedItem());
@@ -101,6 +127,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateUIElements(boolean running) {
+        preferences.edit().putBoolean(RUNNING_KEY, running).apply();
+
         String text = running ? "Activity Recorder is running" : "Activity Recorder is not running";
         statusText.setText(text);
 
