@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
 
         permissionsManager = new PermissionsManager(this);
         powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        SensorRecordPersister.getInstance().setFirebaseEnabled(true);
 
         requestBatteryOptmizationsIfNeeded();
         setUpSpinner();
