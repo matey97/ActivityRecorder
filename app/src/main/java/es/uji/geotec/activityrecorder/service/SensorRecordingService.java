@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
@@ -19,6 +20,9 @@ import es.uji.geotec.activityrecorder.R;
 import es.uji.geotec.activityrecorder.model.AccelerometerSensorRecord;
 import es.uji.geotec.activityrecorder.model.ActivityEnum;
 import es.uji.geotec.activityrecorder.persistence.SensorRecordPersister;
+
+import static es.uji.geotec.activityrecorder.MainActivity.PREFERENCES;
+import static es.uji.geotec.activityrecorder.MainActivity.FIREBASE_ENABLED_KEY;
 
 public class SensorRecordingService extends Service {
 
@@ -106,17 +110,22 @@ public class SensorRecordingService extends Service {
 
     private void saveRecords() {
         SensorRecordPersister persister = SensorRecordPersister.getInstance();
-
+        persister.setFirebaseEnabled(this.getApplicationContext()
+                .getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
+                .getBoolean(FIREBASE_ENABLED_KEY, false));
         persister.setActivity(activity);
 
         List<AccelerometerSensorRecord> sensorRecords = sensorReceiver.getSensorRecords();
 
         // First and last SAMPLES_TO_DISCARD are removed in order to avoid noise
         // (click button and place phone on pocket, get phone from pocket to stop...)
-        sensorRecords = sensorRecords.subList(SAMPLES_TO_DISCARD, sensorRecords.size() - SAMPLES_TO_DISCARD);
-        persister.saveSensorRecords(sensorRecords);
-
-        Log.d(TAG, "saveRecords: gathered records for " + activity + " saved");
+        try {
+            sensorRecords = sensorRecords.subList(SAMPLES_TO_DISCARD, sensorRecords.size() - SAMPLES_TO_DISCARD);
+            persister.saveSensorRecords(sensorRecords);
+            Log.d(TAG, "saveRecords: gathered records for " + activity + " saved");
+        } catch (IllegalArgumentException ex) {
+            Log.d(TAG, "saveRecords: not enought records to save");            
+        }
     }
 
     private void runInForegroundWithNotification() {
@@ -126,7 +135,7 @@ public class SensorRecordingService extends Service {
 
     private Notification createNotification() {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.mipmap.ic_launcher_foreground)
                 .setContentTitle("ActivityRecorder is working")
                 .setContentText("Accelerometer data is being gathered")
                 .build();

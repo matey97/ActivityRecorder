@@ -26,6 +26,8 @@ import static es.uji.geotec.activityrecorder.service.SensorRecordingService.ACTI
 
 public class MainActivity extends AppCompatActivity {
 
+    public static final String PREFERENCES = "es.uji.geotec.activityrecorder.PREFERENCES";
+    public static final String FIREBASE_ENABLED_KEY = "FIREBASE";
     private static final String RUNNING_KEY = "RUNNING";
 
     private Intent intent;
@@ -36,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
     private Button stopButton;
     private Switch firebaseSwitch;
 
-    private ActivityEnum activitySelected;
     private PermissionsManager permissionsManager;
     private PowerManager powerManager;
 
@@ -59,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         requestBatteryOptmizationsIfNeeded();
         setUpSpinner();
 
-        preferences = getPreferences(Context.MODE_PRIVATE);
+        preferences = getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
         boolean running = preferences.getBoolean(RUNNING_KEY, false);
         updateUIElements(running);
     }
@@ -98,18 +99,18 @@ public class MainActivity extends AppCompatActivity {
 
     public void onSwitchClicked(View v) {
         boolean firebaseChecked = firebaseSwitch.isChecked();
-        SensorRecordPersister.getInstance().setFirebaseEnabled(firebaseChecked);
+        preferences.edit().putBoolean(FIREBASE_ENABLED_KEY, firebaseChecked).apply();
     }
 
     private void requestBatteryOptmizationsIfNeeded() {
         if (powerManager.isIgnoringBatteryOptimizations(getPackageName()))
             return;
 
-        Intent intent = new Intent(
+        Intent optimizationsIntent = new Intent(
                 Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
                 Uri.parse("package:"+getPackageName())
         );
-        startActivity(intent);
+        startActivity(optimizationsIntent);
     }
 
     private void startRecording() {
