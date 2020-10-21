@@ -112,7 +112,7 @@ public class SensorRecordingService extends Service {
         SensorRecordPersister persister = SensorRecordPersister.getInstance();
         persister.setFirebaseEnabled(this.getApplicationContext()
                 .getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
-                .getBoolean(FIREBASE_ENABLED_KEY, false));
+                .getBoolean(FIREBASE_ENABLED_KEY, true));
         persister.setActivity(activity);
 
         List<AccelerometerSensorRecord> sensorRecords = sensorReceiver.getSensorRecords();

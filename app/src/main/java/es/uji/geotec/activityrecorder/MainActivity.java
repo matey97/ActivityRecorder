@@ -61,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
         setUpSpinner();
 
         preferences = getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE);
+        updateFirebaseStoreageState();
         boolean running = preferences.getBoolean(RUNNING_KEY, false);
         updateUIElements(running);
     }
@@ -98,6 +99,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSwitchClicked(View v) {
+        updateFirebaseStoreageState();
+    }
+
+    private void updateFirebaseStoreageState() {
         boolean firebaseChecked = firebaseSwitch.isChecked();
         preferences.edit().putBoolean(FIREBASE_ENABLED_KEY, firebaseChecked).apply();
     }
